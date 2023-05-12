@@ -102,7 +102,9 @@ class MPTransformer(nn.Module):
         enc_output = self.lstm(enc_output, saved_process_mask[-1], non_pad_mask)
 
         # Predictor
-        time_prediction = self.time_predictor(enc_output, non_pad_mask)
+        time_diff_prediction = self.time_predictor(enc_output, non_pad_mask)
+        time_prediction = event_time + time_diff_prediction.squeeze(-1)
+        time_prediction.unsqueeze_(-1)
         type_prediction = self.type_predictor(enc_output, non_pad_mask)
         value_prediction = self.value_predictor(enc_output, non_pad_mask)
 

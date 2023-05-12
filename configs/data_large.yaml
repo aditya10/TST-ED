@@ -1,0 +1,33 @@
+device: 'cuda'
+seed: 2423
+checkpoint_dir: 'output/'
+checkpoint_epoch: 2000
+use_wandb: True
+visualize: True
+
+data:
+  path: 'data/data_large_periodic/'
+  mode: ['subset']
+  sources: [1,2,3]
+
+model:
+  n_head: 4
+  n_layers: 4
+  d_model: 128
+  d_rnn: 128
+  d_inner: 256
+  d_k: 16
+  d_v: 16
+  dropout: 0.1
+  num_processes: 2
+  p_init_random: True
+  oracle: False
+  split_loss: True
+  loss_mode: ['bp', 'type']
+
+train:
+  lr: 0.001
+  batch_size: 32
+  smooth: 0
+  epoch: 2000
+  bp_start_epoch: 50

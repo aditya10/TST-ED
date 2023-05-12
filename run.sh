@@ -1,0 +1,1 @@
+python Main.py -config 'configs/data_large.yaml'
