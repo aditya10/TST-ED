@@ -1,13 +1,13 @@
-# TST-ED
+# PD-EST
 A temporal processes time-series model with a transformer encoder and LSTM decoder for forecasting and predicting the next event type. 
 
 ## Goals:
 
-This model is based on temporal time processes datasets, where you are given time series sequences with each timestep containing `{t, k, v}` where `t` is the time, `k` is the event type, and `v` is the event value. In this project, we attempt to...
+This model is based on temporal time processes datasets, where you are given time series sequences with each timestep containing `{t, k}` where `t` is the time, `k` is the event type. In this project, we attempt to...
 
 * predict the next time step
 * predict the next event's type
-* predict the next event's value
+* find the underlying process for each event
 
 ## Setup:
 
@@ -27,7 +27,7 @@ matplotlib
 ## Usage:
 Please ensure wandb is setup before running the model. You can run the model with the following command:
 ```
-python Main.py -config 'configs/data_large.yaml'
+CUDA_LAUNCH_BLOCKING=1 python Main.py -config 'configs/p2.yaml' -dataset 'data/syn_periodic/'
 ```
 
 ## Acknowledgements:
