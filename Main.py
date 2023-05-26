@@ -27,13 +27,13 @@ def prepare_dataloader(opt):
         with open(name, 'rb') as f:
             data = pickle.load(f, encoding='latin-1')
             num_types = data['dim_process']
-            data = data[dict_name]
+            data = data['data'] if dict_name not in data else data[dict_name]
             return data, int(num_types)
 
     print('[Info] Loading train data...')
     train_data, num_types = load_data(opt.data.path + 'train.pkl', 'train')
-    print('[Info] Loading dev data...')
-    dev_data, _ = load_data(opt.data.path + 'dev.pkl', 'dev')
+    # print('[Info] Loading dev data...')
+    # dev_data, _ = load_data(opt.data.path + 'dev.pkl', 'dev')
     print('[Info] Loading test data...')
     test_data, _ = load_data(opt.data.path + 'test.pkl', 'test')
 
@@ -48,19 +48,22 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-config', type=str, default='config.json', help='Path to the config file.')
+    parser.add_argument('-dataset', type=str, default='data/ds_large_periodic/', help='Path to the dataset.')
     args = parser.parse_args()
 
     """ load config """
+    torch.autograd.set_detect_anomaly(True)
 
     with open(args.config) as f:
         opt = yaml.load(f, Loader)
         opt = edict(opt)
+        opt.data.path = args.dataset
 
     wandb_name = opt.data.path+'/'+opt.data.mode[0]+'-'+str(opt.model.num_processes)+datetime.datetime.now().strftime("/%H%M%S-%B%d")
     wandb.init(project='TST-ED', name=wandb_name, config=opt, mode=("online" if opt.use_wandb else "disabled"))
 
     # default device is CUDA
-    opt.device = torch.device('cuda')
+    opt.device = torch.device('cpu' if opt.device == 'cpu' else 'cuda')
 
     # create a folder for saving checkpoints
     opt.path = opt.checkpoint_dir + wandb_name

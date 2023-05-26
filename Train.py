@@ -48,13 +48,13 @@ def train_epoch(model, training_data, optimizer, opt, epoch):
         enc_out, prediction, saved_process_masks = model(event_time, event_type, event_value, process_mask)
         
         """ visualize """
-        if opt.visualize and epoch % 100 == 0 and not viz_done:
+        if opt.visualize and epoch % 50 == 0 and not viz_done:
             Vis.visulize_processes_masks(saved_process_masks, process_mask_gt, opt.model.n_layers, opt.path, 'train'+str(epoch))
             Vis.visulize_time(event_time, prediction[0], opt.path, 'train'+str(epoch))
             viz_done = True
 
         """ backward """
-        loss, batch_metrics = Loss.compute_loss(prediction, saved_process_masks[-1], event_time, event_type, event_process, opt, epoch)
+        loss, batch_metrics = Loss.compute_loss(prediction, saved_process_masks, event_time, event_type, event_process, opt, epoch)
         
         loss.backward()
 
@@ -75,7 +75,7 @@ def train_epoch(model, training_data, optimizer, opt, epoch):
     return {'train': metrics}
 
 
-def train(model, training_data, validation_data, optimizer, scheduler, opt, checkpoint_after=500):
+def train(model, training_data, validation_data, optimizer, scheduler, opt):
     """ Start training. """
 
     for epoch_i in range(opt.train.epoch):
@@ -93,7 +93,7 @@ def train(model, training_data, validation_data, optimizer, scheduler, opt, chec
         print('  - (Validation) ', val_metrics)
         wandb.log(val_metrics, step=epoch)
         
-        if epoch % checkpoint_after == 0:
+        if epoch % opt.checkpoint_epoch == 0:
             Utils.save_checkpoint(model, optimizer, epoch, opt.path)
     
         # logging

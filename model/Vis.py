@@ -26,10 +26,9 @@ def visulize_time(event_time, time_prediction, savepath, tag):
     y_zeros = [0]*len(event_time[0].cpu().detach().numpy())
     y_ones = [1]*len(event_time[0].cpu().detach().numpy())
 
-    plt.plot(event_time[0].cpu().detach().numpy(), y_zeros, 'o', label='true')
-    plt.plot(time_prediction_final[0].cpu().detach().numpy(), y_ones, 'o', label='pred')
+    plt.plot(event_time[0].cpu().detach().numpy()[:30], y_zeros[:30], 'o', label='true')
+    plt.plot(time_prediction_final[0].cpu().detach().numpy()[:30], y_ones[:30], 'o', label='pred')
 
-    plt.xlim([2, 200])
     plt.ylim(-5, 5)
  
     plt.legend()

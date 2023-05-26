@@ -33,6 +33,8 @@ def bipartite_matching_loss(prediction, event_time, event_type, non_pad_mask, nu
     
         costs = torch.zeros((pred.shape[0]+num_processes-1, true.shape[0]+num_processes-1))
         costs[:pred.shape[0], :true.shape[0]] = (pred.unsqueeze(1) - true.unsqueeze(0))**2
+        costs.fill_diagonal_(10000)
+        costs[pred.shape[0]:, true.shape[0]:] = 0
 
         row_ind, col_ind = linear_sum_assignment(costs.detach().cpu().numpy())
 
@@ -61,10 +63,6 @@ def bipartite_matching_loss(prediction, event_time, event_type, non_pad_mask, nu
         pred = time_prediction[i, non_pad_mask[i]]
         true = event_time[i, non_pad_mask[i]]
     
-        pred, idz = torch.sort(pred, dim=0)
-
-        true = true[1:] 
-        pred = pred[:-1]
         loss, count, good_matches = bipartite_matching_loss_algo(pred, true, num_processes)
 
         loss_total += loss
@@ -73,10 +71,6 @@ def bipartite_matching_loss(prediction, event_time, event_type, non_pad_mask, nu
 
         type_true = event_type[i, non_pad_mask[i]]
         type_pred = type_prediction[i, non_pad_mask[i]]
-        type_pred = type_pred[idz] # [S, num_types]
-
-        type_true = type_true[1:]
-        type_pred = type_pred[:-1]
 
         type_loss, type_acc = type_loss_algo(type_pred, type_true, good_matches)
 
@@ -87,10 +81,21 @@ def bipartite_matching_loss(prediction, event_time, event_type, non_pad_mask, nu
 
 
 # Loss for process assignment, use sklearn's adjusted_rand_score
-def process_assignment_loss(process_mask, event_process, non_pad_mask):
+def process_assignment_loss(saved_process_masks, event_process, non_pad_mask):
+
+    process_mask = saved_process_masks[1].detach().clone()
+    for m in saved_process_masks[2:]:
+        process_mask += m.detach().clone()
     
     process_mask = process_mask.permute(1, 2, 0) # [B, S, P]
 
+    # To test random process assignment
+    # process_mask = torch.rand_like(process_mask)
+    
+    # # To test constant assignment
+    # process_mask[:, :, 0] = 1
+    # process_mask[:, :, 1:] = 0
+    
     # pick process with highest probability
     process_mask = torch.argmax(process_mask, dim=2) + 1 # [B, S]
 
@@ -111,7 +116,7 @@ def type_loss_algo(pred, true, good_matches):
     (good_row_idx, good_col_idx) = good_matches
 
     pred = pred[good_row_idx]
-    true = true[good_col_idx]
+    true = true[good_col_idx] - 1 # -1 because event_type starts from 1
 
     # use cross entropy loss
     loss = F.cross_entropy(pred, true, reduction='sum')

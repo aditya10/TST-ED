@@ -45,13 +45,13 @@ def eval_epoch(model, validation_data, opt, epoch):
             enc_out, prediction, saved_process_masks = model(event_time, event_type, event_value, process_mask)
 
             """ visualize """
-            if opt.visualize and epoch % 100 == 0 and not viz_done:
+            if opt.visualize and epoch % 50 == 0 and not viz_done:
                 Vis.visulize_processes_masks(saved_process_masks, process_mask_gt, opt.model.n_layers, opt.path, 'val'+str(epoch))
                 Vis.visulize_time(event_time, prediction[0], opt.path, 'val'+str(epoch))
                 viz_done = True
 
             """ compute loss """
-            loss, batch_metrics = Loss.compute_loss(prediction, saved_process_masks[-1], event_time, event_type, event_process, opt, epoch)
+            loss, batch_metrics = Loss.compute_loss(prediction, saved_process_masks, event_time, event_type, event_process, opt, epoch)
 
             """ update cumulative metrics """
             for k, v in batch_metrics.items():

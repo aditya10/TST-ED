@@ -36,7 +36,6 @@ class EventData(torch.utils.data.Dataset):
             data = data[:5000]
 
         self.time = [[elem['time_since_start'] for elem in inst] for inst in data]
-        self.time_gap = [[round(elem['time_since_last_event'], 4) for elem in inst] for inst in data]
         self.event_type = [[elem['type_event'] for elem in inst] for inst in data]
         if 'process_event' in data[0][0]:
             self.event_process = [[elem['process_event'] for elem in inst] for inst in data]
